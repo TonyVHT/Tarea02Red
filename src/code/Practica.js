@@ -4,11 +4,11 @@ const app = express();
 const config = require('../config/Config');
 const PORT = config.NODE_PORT_DES_RED;
 
-const helperServerResponse = (res, status, message) => {
+const helperServerResponse = (req, res, message) => {
     const accept = req.headers.accept;
 
     if(accept.includes('application/json')) {
-        res.status(status).json({ message });
+        res.json(message);
     }else if(accept.includes('application/xml')){
         let xmlResponse = `<response>`;
         for (const key in message) {
@@ -29,8 +29,10 @@ const helperServerResponse = (res, status, message) => {
 }
 
 app.get('/info', (req, res) =>{
-    const defaultMessage = {message: 'Giving information... bip bup'}
+    const defaultMessage = {message: ' *Giving information... bip bup*'}
     helperServerResponse(req, res, defaultMessage);
 })
 
-
+app.listen(PORT, () => {
+    console.log(`Try http://localhost:${PORT} to send a request`);
+});
