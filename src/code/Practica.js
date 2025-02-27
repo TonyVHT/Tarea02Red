@@ -27,3 +27,10 @@ const helperServerResponse = (res, status, message) => {
         res.status(406).send('Not Acceptable');
     }
 }
+
+app.get('/info', (req, res) =>{
+    const defaultMessage = {message: 'Giving information... bip bup'}
+    helperServerResponse(req, res, defaultMessage);
+})
+
+
