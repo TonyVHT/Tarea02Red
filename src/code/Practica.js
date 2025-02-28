@@ -56,6 +56,13 @@ app.get('/preferencia', (req, res) =>{
     }
 })
 
+app.get('/cache', (req, res) => {
+    res.set({'Cache-Control': 'max-age=30','Expires': 
+        new Date(Date.now() + 30000).toUTCString(),'Pragma': 'no-cache'
+    });
+    res.send('Respuesta con control de caché');
+});
+
 app.listen(PORT, () => {
     console.log(`Try http://localhost:${PORT} to send a request`);
 });
