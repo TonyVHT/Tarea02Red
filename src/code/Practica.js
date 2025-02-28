@@ -8,6 +8,12 @@ const APPLICATION_JSON = 'application/json';
 const APPLICATION_XML = 'application/xml';
 const TEXT_HTML = 'text/html';
 
+const URL_INFO = '/info';
+const URL_CACHE = '/cache';
+const URL_PREFERENCIA = '/preferencia';
+const URL_ETAG = '/etag';
+
+
 const helperServerResponse = (req, res, message) => {
     const acceptHeader = req.headers.accept || '';
 
@@ -32,12 +38,12 @@ const helperServerResponse = (req, res, message) => {
     }
 }
 
-app.get('/info', (req, res) =>{
+app.get(URL_INFO, (req, res) =>{
     const defaultMessage = {message: ' *Giving information... bip bup*'}
     helperServerResponse(req, res, defaultMessage);
 })
 
-app.get('/preferencia', (req, res) =>{
+app.get(URL_PREFERENCIA, (req, res) =>{
     const acceptHeader = req.headers.accept;
     const typeHeader = acceptHeader.split(',').map(format => {
         const [type, q = 'q=1'] = format.split(';');
@@ -56,12 +62,25 @@ app.get('/preferencia', (req, res) =>{
     }
 })
 
-app.get('/cache', (req, res) => {
+app.get(URL_CACHE, (req, res) => {
     res.set({'Cache-Control': 'max-age=30','Expires': 
         new Date(Date.now() + 30000).toUTCString(),'Pragma': 'no-cache'
     });
     res.send('Respuesta con control de caché');
 });
+
+app.get(URL_ETAG, (req, res) => {
+    const messageResponse = 'Contenido con ETag';
+    const etag = crypto.createHash('md5').update(messageResponse).digest('hex');
+
+    if (req.headers['if-none-match'] === etag) {
+        res.status(304).end();
+    } else {
+        res.set('ETag', etag);
+        res.send(messageResponse);
+    }
+});
+
 
 app.listen(PORT, () => {
     console.log(`Try http://localhost:${PORT} to send a request`);
