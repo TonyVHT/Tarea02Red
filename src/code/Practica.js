@@ -27,8 +27,9 @@ const helperServerResponse = (req, res, message) => {
     if (acceptHeader.includes(APPLICATION_JSON)) {
         res.json(message);
     } else if (acceptHeader.includes(APPLICATION_XML)) {
-        let xmlResponse = `<response><message>
-            ${typeof messageContent === 'object' ? JSON.stringify(messageContent) : messageContent}</message></response>`;
+        let xmlResponse = 
+            `<response><message>${typeof messageContent === 'object' 
+            ? JSON.stringify(messageContent) : messageContent}</message></response>`;
             res.type(APPLICATION_XML).send(xmlResponse);
     } else if (acceptHeader.includes(TEXT_HTML)) {
         let htmlResponse = `<html><body><p>${messageContent}</p></body></html>`;
