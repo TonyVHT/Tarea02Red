@@ -46,5 +46,5 @@ En caso de que el tag sea diferente, entonces la respuesta será la siguiente:
 ![alt text](images/image10.png)
 
 ----
-Alumno: Tony Villegas Hurtado 
+Alumno: Tony Villegas Hurtado  
 EE: DESARROLLO DE SISTEMAS EN RED
