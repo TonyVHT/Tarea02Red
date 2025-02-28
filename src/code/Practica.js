@@ -13,38 +13,38 @@ const URL_CACHE = '/cache';
 const URL_PREFERENCIA = '/preferencia';
 const URL_ETAG = '/etag';
 
+const MESSAGE_RESPONSE_INFO = '*Giving information... bip bop*';
+const MESSAGE_ERROR_406 = 'Not Acceptable';
+const MESSAGE_CACHE_RESPONSE = 'Respuesta con control de caché';
+const MESSAGE_RESPONSE_ETAG = 'Contenido con ETAG';
+
 
 const helperServerResponse = (req, res, message) => {
     const acceptHeader = req.headers.accept || '';
 
-    if(acceptHeader.includes(APPLICATION_JSON)) {
+    const messageContent = message.message || message; 
+
+    if (acceptHeader.includes(APPLICATION_JSON)) {
         res.json(message);
-    }else if(acceptHeader.includes(APPLICATION_XML)){
-        let xmlResponse = `<response>`;
-        for (const key in message) {
-            xmlResponse += `<${key}>${message[key]}</${key}>`;
-        }
-        xmlResponse += `</response>`;
-        res.type('application/xml').send(xmlResponse);
-    }else if(acceptHeader.includes(TEXT_HTML)){
-        let htmlResponse = '<html><body>';
-        for (const key in message) {
-            htmlResponse += `<p>${key}: ${message[key]}</p>`;
-        }
-        htmlResponse += '</body></html>';
-        res.type('text/html').send(htmlResponse);
-    }else{
-        res.status(406).send('Not Acceptable');
+    } else if (acceptHeader.includes(APPLICATION_XML)) {
+        let xmlResponse = `<response><message>
+            ${typeof messageContent === 'object' ? JSON.stringify(messageContent) : messageContent}</message></response>`;
+            res.type(APPLICATION_XML).send(xmlResponse);
+    } else if (acceptHeader.includes(TEXT_HTML)) {
+        let htmlResponse = `<html><body><p>${messageContent}</p></body></html>`;
+        res.type(TEXT_HTML).send(htmlResponse);
+    } else {
+        res.status(406).send(MESSAGE_ERROR_406);
     }
 }
 
 app.get(URL_INFO, (req, res) =>{
-    const defaultMessage = {message: ' *Giving information... bip bup*'}
+    const defaultMessage = {message: MESSAGE_RESPONSE_INFO}
     helperServerResponse(req, res, defaultMessage);
 })
 
 app.get(URL_PREFERENCIA, (req, res) =>{
-    const acceptHeader = req.headers.accept;
+    const acceptHeader = req.headers.accept || '';
     const typeHeader = acceptHeader.split(',').map(format => {
         const [type, q = 'q=1'] = format.split(';');
         return { type: type.trim(), q: parseFloat(q.split('=')[1] || 1) };
@@ -58,7 +58,7 @@ app.get(URL_PREFERENCIA, (req, res) =>{
         helperServerResponse(req, res, message);
     }
     else{
-        res.status(406).send('Not Acceptable');
+        res.status(406).send(MESSAGE_ERROR_406);
     }
 })
 
@@ -66,18 +66,17 @@ app.get(URL_CACHE, (req, res) => {
     res.set({'Cache-Control': 'max-age=30','Expires': 
         new Date(Date.now() + 30000).toUTCString(),'Pragma': 'no-cache'
     });
-    res.send('Respuesta con control de caché');
+    res.send(MESSAGE_CACHE_RESPONSE);
 });
 
 app.get(URL_ETAG, (req, res) => {
-    const messageResponse = 'Contenido con ETag';
-    const etag = crypto.createHash('md5').update(messageResponse).digest('hex');
+    const etag = crypto.createHash('md5').update(MESSAGE_RESPONSE_ETAG).digest('hex');
 
     if (req.headers['if-none-match'] === etag) {
         res.status(304).end();
     } else {
         res.set('ETag', etag);
-        res.send(messageResponse);
+        res.send(MESSAGE_RESPONSE_ETAG);
     }
 });
 
